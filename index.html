@@ -1,0 +1,486 @@
+
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Picture to Writing | Here and Now</title>
+<style>
+:root{
+  --navy:#243b53;--blue:#3978c5;--sky:#eaf3ff;--mint:#e8f6ef;
+  --green:#31866a;--yellow:#fff4d6;--ink:#263445;--muted:#718096;
+  --line:#dce5ee;--bg:#f4f7fb;--white:#fff;--red:#c65353;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,"Noto Sans KR",sans-serif;line-height:1.6}
+button,textarea{font:inherit}
+button{cursor:pointer}
+header{background:linear-gradient(120deg,#243b53,#3978c5);color:white;padding:27px 20px 24px}
+.header-inner{max-width:960px;margin:auto}
+.eyebrow{font-size:12px;letter-spacing:2px;opacity:.8;font-weight:bold}
+h1{font-size:clamp(25px,5vw,36px);margin:5px 0}
+header p{margin:4px 0 0;opacity:.9}
+main{max-width:960px;margin:22px auto;padding:0 16px 50px}
+.progress-wrap{background:white;border:1px solid var(--line);border-radius:15px;padding:15px 18px;margin-bottom:18px}
+.progress-top{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:9px}
+.progress{height:8px;background:#e9eef4;border-radius:20px;overflow:hidden}
+.progress-bar{height:100%;width:16.66%;background:var(--blue);transition:width .3s}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin-top:13px}
+.step-dot{border:0;background:transparent;color:#8795a5;font-size:11px;padding:5px 2px;border-radius:8px}
+.step-dot.active{background:var(--sky);color:var(--blue);font-weight:bold}
+.step-dot.done{color:var(--green)}
+.panel{background:white;border:1px solid var(--line);border-radius:18px;padding:clamp(18px,4vw,30px);box-shadow:0 5px 18px #233b5310}
+.stage{display:none}.stage.active{display:block}
+.kicker{font-size:12px;letter-spacing:1.5px;color:var(--blue);font-weight:bold}
+h2{font-size:25px;color:var(--navy);margin:5px 0 8px}
+.lead{color:var(--muted);margin:0 0 22px}
+.scene{width:100%;display:block;background:#eaf5ff;border:1px solid #dce9f5;border-radius:14px}
+.scene-note{font-size:13px;color:var(--muted);margin:9px 0 18px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.info-card{background:#f7f9fc;border:1px solid var(--line);border-radius:12px;padding:14px}
+.info-card strong{display:block;color:var(--navy);margin-bottom:5px}
+.info-card p{margin:0;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:9px;margin:15px 0}
+.chip{border:1px solid #cbd8e6;background:white;border-radius:30px;padding:9px 14px;color:var(--ink)}
+.chip.selected{background:var(--sky);border-color:var(--blue);color:#205b9c;font-weight:bold}
+.hint{padding:12px 15px;background:var(--yellow);border-radius:10px;font-size:14px;margin:16px 0}
+.model-list{display:grid;gap:10px;margin:18px 0}
+.model{padding:13px 15px;border:1px solid var(--line);border-radius:11px;background:#fbfcfe}
+.model .en{font-weight:bold;color:var(--navy)}
+.model .ko{font-size:13px;color:var(--muted)}
+.tag{display:inline-block;background:var(--mint);color:var(--green);font-size:11px;font-weight:bold;padding:2px 8px;border-radius:20px;margin-left:6px}
+.question{border:1px solid var(--line);border-radius:13px;padding:16px;margin:12px 0}
+.question p{font-weight:bold;margin:0 0 12px}
+.options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.option{border:1px solid #d7e0e9;background:white;border-radius:9px;padding:10px;text-align:left}
+.option:hover{border-color:var(--blue)}
+.option.correct{background:#e8f6ef;border-color:var(--green);color:#21674f}
+.option.wrong{background:#fff0f0;border-color:var(--red);color:#a43d3d}
+.feedback{font-size:13px;margin-top:9px;min-height:20px;color:var(--muted)}
+textarea{width:100%;min-height:145px;padding:14px;border:1px solid #cbd8e6;border-radius:11px;resize:vertical;line-height:1.8;color:var(--ink)}
+textarea:focus{outline:2px solid #a9c9ef;border-color:var(--blue)}
+.write-tools{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.small-btn{border:1px solid #cbd8e6;background:white;border-radius:8px;padding:7px 11px;font-size:13px}
+.feedback-box{display:none;margin-top:13px;background:#f1f7ff;border-radius:11px;padding:14px;font-size:14px}
+.feedback-box.show{display:block}
+.nav{display:flex;justify-content:space-between;gap:10px;margin-top:22px}
+.btn{border:0;border-radius:10px;padding:12px 20px;font-weight:bold}
+.btn.primary{background:var(--blue);color:white}
+.btn.secondary{background:#edf1f6;color:var(--navy)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.time-card{border-radius:13px;padding:16px;border:1px solid var(--line)}
+.time-card.past{background:#fff9e9}
+.time-card.now{background:#eff7ff}
+.time-card h3{margin:0 0 6px;font-size:15px}
+.time-card p{margin:0;font-size:14px}
+.result{background:#f3f8f5;border:1px solid #cfe7d9;padding:18px;border-radius:13px;margin-top:16px}
+.result h3{margin:0 0 7px;color:var(--green)}
+.footer{text-align:center;color:#8a98a8;font-size:12px;margin-top:20px}
+@media(max-width:600px){
+ .steps{grid-template-columns:repeat(3,1fr)}
+ .options{grid-template-columns:1fr}
+ .two-col{grid-template-columns:1fr}
+ header{padding:22px 17px}
+}
+</style>
+</head>
+<body>
+<header>
+ <div class="header-inner">
+  <div class="eyebrow">ENGLISH WRITING PROJECT</div>
+  <h1>Picture to Writing</h1>
+  <p>Look carefully. Choose details. Describe what is happening now!</p>
+ </div>
+</header>
+
+<main>
+ <div class="progress-wrap">
+  <div class="progress-top"><span id="progressLabel">STEP 1 OF 6</span><span id="progressPercent">17%</span></div>
+  <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+  <div class="steps" id="stepNav">
+   <button class="step-dot active" data-step="0">1. Observe</button>
+   <button class="step-dot" data-step="1">2. Select</button>
+   <button class="step-dot" data-step="2">3. Learn</button>
+   <button class="step-dot" data-step="3">4. Practice</button>
+   <button class="step-dot" data-step="4">5. Write</button>
+   <button class="step-dot" data-step="5">6. Here & Now</button>
+  </div>
+ </div>
+
+ <div class="panel">
+  <!-- STEP 1 -->
+  <section class="stage active" id="stage0">
+   <div class="kicker">STEP 1 · OBSERVE</div>
+   <h2>What can you see?</h2>
+   <p class="lead">Look at the picture carefully. What are the people doing? Where are they?</p>
+
+   <svg class="scene" viewBox="0 0 800 430" role="img" aria-label="A park with children playing soccer, riding a bicycle and reading">
+    <rect width="800" height="430" fill="#dff0ff"/>
+    <circle cx="690" cy="70" r="38" fill="#ffd66b"/>
+    <path d="M0 245 Q200 210 400 245 T800 235 V430 H0Z" fill="#9bd28e"/>
+    <path d="M0 330 Q200 300 400 340 T800 320 V430 H0Z" fill="#7fc17d"/>
+    <path d="M0 380 Q400 350 800 375" stroke="#e8d7b2" stroke-width="38" fill="none"/>
+    <!-- trees -->
+    <rect x="75" y="150" width="18" height="105" fill="#916342"/>
+    <circle cx="84" cy="132" r="48" fill="#4e9d68"/>
+    <circle cx="55" cy="150" r="28" fill="#62ae75"/>
+    <rect x="710" y="160" width="17" height="100" fill="#916342"/>
+    <circle cx="718" cy="139" r="46" fill="#4e9d68"/>
+    <!-- bench -->
+    <rect x="520" y="250" width="110" height="10" rx="3" fill="#a56c42"/>
+    <rect x="530" y="263" width="8" height="34" fill="#79502f"/>
+    <rect x="612" y="263" width="8" height="34" fill="#79502f"/>
+    <rect x="520" y="235" width="110" height="10" rx="3" fill="#bd8251"/>
+    <!-- reader -->
+    <circle cx="568" cy="205" r="16" fill="#f2c49b"/>
+    <path d="M552 225 Q570 215 586 229 L593 270 L548 270Z" fill="#e47b72"/>
+    <path d="M553 238 L535 256 L560 258 M584 239 L603 254" stroke="#f2c49b" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M555 252 L577 252 L566 269Z M577 252 L599 252 L588 269Z" fill="#fff4d6" stroke="#9a7658" stroke-width="2"/>
+    <!-- soccer player -->
+    <circle cx="280" cy="185" r="17" fill="#f2c49b"/>
+    <path d="M263 204 Q280 195 297 207 L305 260 L256 260Z" fill="#3978c5"/>
+    <path d="M265 218 L238 240 M297 218 L320 235" stroke="#f2c49b" stroke-width="10" stroke-linecap="round"/>
+    <path d="M267 258 L253 300 M293 258 L315 293" stroke="#263445" stroke-width="12" stroke-linecap="round"/>
+    <path d="M247 302 L263 302 M310 296 L328 301" stroke="#263445" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="350" cy="300" r="17" fill="white" stroke="#263445" stroke-width="2"/>
+    <path d="M350 289 l7 5 -3 8 h-8 l-4 -7Z" fill="#263445"/>
+    <!-- cyclist -->
+    <circle cx="440" cy="333" r="25" fill="none" stroke="#42566b" stroke-width="5"/>
+    <circle cx="525" cy="333" r="25" fill="none" stroke="#42566b" stroke-width="5"/>
+    <path d="M440 333 L470 285 L495 333 L440 333 L480 333 L525 333 L495 285" fill="none" stroke="#3978c5" stroke-width="5"/>
+    <circle cx="481" cy="260" r="15" fill="#f2c49b"/>
+    <path d="M474 277 L490 281 L501 309 L476 309 L459 291Z" fill="#e6a23c"/>
+    <path d="M476 285 L495 304 M482 280 L470 302" stroke="#f2c49b" stroke-width="8" stroke-linecap="round"/>
+    <path d="M490 309 L478 332 M495 309 L515 330" stroke="#263445" stroke-width="7" stroke-linecap="round"/>
+    <!-- flowers -->
+    <g fill="#f7d36a"><circle cx="160" cy="330" r="5"/><circle cx="172" cy="325" r="5"/><circle cx="165" cy="317" r="5"/></g>
+    <g fill="#e88d9b"><circle cx="660" cy="350" r="5"/><circle cx="672" cy="345" r="5"/><circle cx="665" cy="337" r="5"/></g>
+   </svg>
+   <p class="scene-note">Take your time. You do not need to write yet. Just notice the details.</p>
+   <div class="card-grid">
+    <div class="info-card"><strong>People</strong><p>Who can you see in the park?</p></div>
+    <div class="info-card"><strong>Actions</strong><p>What are they doing?</p></div>
+    <div class="info-card"><strong>Places</strong><p>Where are they?</p></div>
+    <div class="info-card"><strong>Objects</strong><p>What are they using or holding?</p></div>
+   </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="stage" id="stage1">
+   <div class="kicker">STEP 2 · SELECT</div>
+   <h2>Choose the details</h2>
+   <p class="lead">Select at least three things you want to describe in your writing.</p>
+   <h3>Who or what can you see?</h3>
+   <div class="chips" id="selectionChips">
+    <button class="chip" data-item="a boy">a boy</button>
+    <button class="chip" data-item="a girl">a girl</button>
+    <button class="chip" data-item="a bicycle">a bicycle</button>
+    <button class="chip" data-item="a soccer ball">a soccer ball</button>
+    <button class="chip" data-item="a bench">a bench</button>
+    <button class="chip" data-item="a tree">a tree</button>
+    <button class="chip" data-item="a book">a book</button>
+    <button class="chip" data-item="the sun">the sun</button>
+   </div>
+   <h3>What are they doing?</h3>
+   <div class="chips" id="actionChips">
+    <button class="chip" data-item="playing soccer">playing soccer</button>
+    <button class="chip" data-item="riding a bicycle">riding a bicycle</button>
+    <button class="chip" data-item="reading a book">reading a book</button>
+    <button class="chip" data-item="sitting on a bench">sitting on a bench</button>
+   </div>
+   <h3>Where are they?</h3>
+   <div class="chips" id="placeChips">
+    <button class="chip" data-item="in the park">in the park</button>
+    <button class="chip" data-item="near the tree">near the tree</button>
+    <button class="chip" data-item="next to the bench">next to the bench</button>
+    <button class="chip" data-item="on the path">on the path</button>
+   </div>
+   <div class="hint">Tip: Choose details that help your reader imagine the picture.</div>
+   <p id="selectionCount">0 details selected</p>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="stage" id="stage2">
+   <div class="kicker">STEP 3 · LEARN</div>
+   <h2>Build your sentences</h2>
+   <p class="lead">Use these sentence patterns to describe the picture.</p>
+   <div class="model-list">
+    <div class="model"><div class="en">There is a boy in the park.</div><div class="ko">공원에 한 소년이 있다.</div><span class="tag">There is</span></div>
+    <div class="model"><div class="en">Two people are playing soccer.</div><div class="ko">두 사람이 축구를 하고 있다.</div><span class="tag">Present progressive</span></div>
+    <div class="model"><div class="en">A girl is sitting on a bench.</div><div class="ko">한 소녀가 벤치에 앉아 있다.</div><span class="tag">Present progressive</span></div>
+    <div class="model"><div class="en">The bicycle is next to the path.</div><div class="ko">자전거가 길 옆에 있다.</div><span class="tag">Preposition</span></div>
+    <div class="model"><div class="en">The boy is wearing a blue shirt.</div><div class="ko">그 소년은 파란 셔츠를 입고 있다.</div><span class="tag">Detail</span></div>
+   </div>
+   <div class="hint"><strong>Remember!</strong><br>지금 일어나는 행동: am / is / are + 동사-ing<br>사람이나 사물의 위치: There is / There are + 장소 표현</div>
+   <h3>Your selected details</h3>
+   <p id="selectedSummary" class="lead">아직 선택한 요소가 없습니다.</p>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="stage" id="stage3">
+   <div class="kicker">STEP 4 · PRACTICE</div>
+   <h2>Check your understanding</h2>
+   <p class="lead">Choose the best answer for each question.</p>
+   <div id="quizArea"></div>
+   <div class="result" id="quizResult" style="display:none">
+    <h3 id="quizScore"></h3>
+    <p id="quizMessage"></p>
+    <button class="small-btn" id="retryQuiz">Try again</button>
+   </div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="stage" id="stage4">
+   <div class="kicker">STEP 5 · WRITE</div>
+   <h2>Describe the picture</h2>
+   <p class="lead">Write 3–5 sentences about the park. Use the details you selected.</p>
+   <div class="hint">
+    <strong>Writing checklist</strong><br>
+    ✓ Use There is / There are.<br>
+    ✓ Use the present progressive for actions.<br>
+    ✓ Add a place expression or an adjective.
+   </div>
+   <div class="write-tools">
+    <button class="small-btn" data-insert="There is ">There is ...</button>
+    <button class="small-btn" data-insert="There are ">There are ...</button>
+    <button class="small-btn" data-insert=" is playing ">is playing ...</button>
+    <button class="small-btn" data-insert=" are playing ">are playing ...</button>
+    <button class="small-btn" data-insert=" next to ">next to ...</button>
+   </div>
+   <textarea id="firstWriting" placeholder="Look at the picture. There is ..."></textarea>
+   <div class="write-tools">
+    <button class="btn primary" id="checkFirstWriting">Check my writing</button>
+    <button class="small-btn" id="showModel">Show a model</button>
+   </div>
+   <div class="feedback-box" id="firstFeedback"></div>
+   <div class="model-list" id="firstModel" style="display:none">
+    <div class="model">
+     <div class="en">There is a boy in the park. He is playing soccer.</div>
+     <div class="en">A girl is reading a book on a bench.</div>
+     <div class="en">Another person is riding a bicycle on the path.</div>
+     <div class="en">The sun is shining, and the park looks beautiful.</div>
+     <div class="ko">공원에 소년이 있습니다. 그는 축구를 하고 있습니다. 한 소녀는 벤치에서 책을 읽고 있습니다. 또 다른 사람은 길에서 자전거를 타고 있습니다. 해가 빛나고 공원은 아름다워 보입니다.</div>
+    </div>
+   </div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="stage" id="stage5">
+   <div class="kicker">STEP 6 · HERE AND NOW</div>
+   <h2>Past or now?</h2>
+   <p class="lead">You already know the past tense. Now, look at the picture again and describe what is happening here and now!</p>
+   <div class="two-col">
+    <div class="time-card past">
+     <h3>YESTERDAY · PAST</h3>
+     <p>A boy <strong>played</strong> soccer in the park.</p>
+     <p>A girl <strong>read</strong> a book.</p>
+    </div>
+    <div class="time-card now">
+     <h3>RIGHT NOW · PRESENT</h3>
+     <p>A boy <strong>is playing</strong> soccer in the park.</p>
+     <p>A girl <strong>is reading</strong> a book.</p>
+    </div>
+   </div>
+   <div class="hint"><strong>Think about the difference.</strong><br>Past: 동사의 과거형을 사용해요.<br>Now: am / is / are + 동사-ing를 사용해요.</div>
+
+   <h3>Mission 1. Describe what is happening now.</h3>
+   <p class="lead">Write 3–5 sentences. You can look at the picture while writing.</p>
+   <textarea id="nowWriting" placeholder="Right now, there is ...&#10;A boy is ..."></textarea>
+   <div class="write-tools">
+    <button class="small-btn" data-insert-target="nowWriting" data-insert="Right now, ">Right now, ...</button>
+    <button class="small-btn" data-insert-target="nowWriting" data-insert="There is ">There is ...</button>
+    <button class="small-btn" data-insert-target="nowWriting" data-insert=" is playing ">is playing ...</button>
+    <button class="small-btn" data-insert-target="nowWriting" data-insert=" are sitting ">are sitting ...</button>
+   </div>
+   <button class="btn primary" id="checkNowWriting">Check my writing</button>
+   <div class="feedback-box" id="nowFeedback"></div>
+
+   <h3 style="margin-top:28px">Mission 2. Change past into now!</h3>
+   <p class="lead">Change each past-tense sentence into a sentence about what is happening now.</p>
+   <div class="question">
+    <p>1. A boy played soccer in the park.</p>
+    <input id="convert1" type="text" placeholder="A boy ...">
+    <div class="feedback" id="convertFeedback1"></div>
+    <button class="small-btn" onclick="checkConvert(1)">Check</button>
+   </div>
+   <div class="question">
+    <p>2. A girl read a book on the bench.</p>
+    <input id="convert2" type="text" placeholder="A girl ...">
+    <div class="feedback" id="convertFeedback2"></div>
+    <button class="small-btn" onclick="checkConvert(2)">Check</button>
+   </div>
+   <button class="small-btn" id="showConvertAnswers">Show example answers</button>
+   <div class="feedback-box" id="convertAnswers">
+    1. A boy is playing soccer in the park.<br>
+    2. A girl is reading a book on the bench.
+   </div>
+   <div class="result">
+    <h3>Great work!</h3>
+    <p>You described a picture using the present tense and compared it with the past tense. You can now describe what happened and what is happening!</p>
+   </div>
+  </section>
+
+  <div class="nav">
+   <button class="btn secondary" id="prevBtn" disabled>← Previous</button>
+   <button class="btn primary" id="nextBtn">Next →</button>
+  </div>
+ </div>
+ <div class="footer">Picture to Writing · English Writing Practice</div>
+</main>
+
+<script>
+const stages=[...document.querySelectorAll(".stage")];
+const dots=[...document.querySelectorAll(".step-dot")];
+const progressBar=document.getElementById("progressBar");
+const progressLabel=document.getElementById("progressLabel");
+const progressPercent=document.getElementById("progressPercent");
+const prevBtn=document.getElementById("prevBtn");
+const nextBtn=document.getElementById("nextBtn");
+let current=0;
+const selected=new Set();
+
+function showStage(index){
+ current=Math.max(0,Math.min(stages.length-1,index));
+ stages.forEach((s,i)=>s.classList.toggle("active",i===current));
+ dots.forEach((d,i)=>{
+  d.classList.toggle("active",i===current);
+  d.classList.toggle("done",i<current);
+ });
+ const pct=Math.round((current+1)/stages.length*100);
+ progressBar.style.width=pct+"%";
+ progressLabel.textContent=`STEP ${current+1} OF ${stages.length}`;
+ progressPercent.textContent=pct+"%";
+ prevBtn.disabled=current===0;
+ nextBtn.textContent=current===stages.length-1?"Start again ↺":"Next →";
+ window.scrollTo({top:0,behavior:"smooth"});
+ if(current===2) updateSelectedSummary();
+}
+nextBtn.addEventListener("click",()=>{
+ if(current===stages.length-1){showStage(0);return;}
+ showStage(current+1);
+});
+prevBtn.addEventListener("click",()=>showStage(current-1));
+dots.forEach(d=>d.addEventListener("click",()=>showStage(Number(d.dataset.step))));
+
+document.querySelectorAll(".chips").forEach(group=>{
+ group.querySelectorAll(".chip").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+   const item=btn.dataset.item;
+   if(selected.has(item)){selected.delete(item);btn.classList.remove("selected");}
+   else{selected.add(item);btn.classList.add("selected");}
+   document.getElementById("selectionCount").textContent=selected.size+" details selected";
+   updateSelectedSummary();
+  });
+ });
+});
+function updateSelectedSummary(){
+ document.getElementById("selectedSummary").textContent=selected.size?[...selected].join(" · "):"아직 선택한 요소가 없습니다.";
+}
+
+const questions=[
+ {q:"Which sentence describes an action happening now?",opts:["He played soccer.","He is playing soccer.","He plays soccer yesterday.","He playing soccer."],a:1,why:"지금 하는 행동은 is + 동사-ing로 표현해요."},
+ {q:"Choose the correct sentence.",opts:["There are a boy.","There is a boy.","There be a boy.","There is boys."],a:1,why:"a boy는 단수이므로 There is를 사용해요."},
+ {q:"Which expression means '벤치 옆에'?",opts:["under the bench","behind the bench","next to the bench","in the bench"],a:2,why:"next to는 '~ 옆에'라는 뜻이에요."},
+ {q:"Complete the sentence: Two girls ___ reading.",opts:["is","am","are","be"],a:2,why:"Two girls는 복수이므로 are를 사용해요."},
+ {q:"Which sentence is about the past?",opts:["A boy is riding a bike.","A boy rides a bike now.","A boy rode a bike yesterday.","A boy is ride a bike."],a:2,why:"yesterday와 과거형 rode가 과거의 일을 나타내요."}
+];
+let quizAnswers={};
+function renderQuiz(){
+ const area=document.getElementById("quizArea");
+ area.innerHTML="";
+ quizAnswers={};
+ document.getElementById("quizResult").style.display="none";
+ questions.forEach((q,i)=>{
+  const box=document.createElement("div");box.className="question";
+  const p=document.createElement("p");p.textContent=(i+1)+". "+q.q;box.appendChild(p);
+  const opts=document.createElement("div");opts.className="options";
+  q.opts.forEach((opt,j)=>{
+   const b=document.createElement("button");b.className="option";b.textContent=opt;
+   b.addEventListener("click",()=>{
+    if(quizAnswers[i]!==undefined)return;
+    quizAnswers[i]=j;
+    [...opts.children].forEach((el,k)=>{
+     el.disabled=true;
+     if(k===q.a)el.classList.add("correct");
+     else if(k===j)el.classList.add("wrong");
+    });
+    const fb=box.querySelector(".feedback");
+    fb.textContent=(j===q.a?"Correct! ":"Not quite. ")+q.why;
+    if(Object.keys(quizAnswers).length===questions.length)showQuizResult();
+   });
+   opts.appendChild(b);
+  });
+  box.appendChild(opts);
+  const fb=document.createElement("div");fb.className="feedback";box.appendChild(fb);
+  area.appendChild(box);
+ });
+}
+function showQuizResult(){
+ const score=questions.filter((q,i)=>quizAnswers[i]===q.a).length;
+ document.getElementById("quizResult").style.display="block";
+ document.getElementById("quizScore").textContent=`Your score: ${score} / ${questions.length}`;
+ document.getElementById("quizMessage").textContent=score===5?"Excellent! You understand the key expressions.":score>=3?"Good work! Review the explanations and try again.":"Keep practicing. You can do it!";
+}
+document.getElementById("retryQuiz").addEventListener("click",renderQuiz);
+renderQuiz();
+
+document.querySelectorAll("[data-insert]").forEach(btn=>{
+ btn.addEventListener("click",()=>{
+  const targetId=btn.dataset.insertTarget||"firstWriting";
+  const area=document.getElementById(targetId);
+  const start=area.selectionStart,end=area.selectionEnd;
+  const value=area.value;
+  area.value=value.slice(0,start)+btn.dataset.insert+value.slice(end);
+  area.focus();area.selectionStart=area.selectionEnd=start+btn.dataset.insert.length;
+ });
+});
+
+function wordCount(text){return text.trim()?text.trim().split(/\s+/).length:0;}
+function sentenceCount(text){return (text.match(/[.!?](\s|$)/g)||[]).length;}
+function checkWriting(text,targetId,mode){
+ const box=document.getElementById(targetId);
+ const words=wordCount(text),sentences=sentenceCount(text);
+ let notes=[];
+ if(!text.trim())notes.push("Write a few sentences first.");
+ else{
+  if(words<15)notes.push("Try adding more details to your writing.");
+  else notes.push("Good! You have included enough words.");
+  if(sentences<3)notes.push("Try to write at least 3 complete sentences.");
+  else notes.push("You have written "+sentences+" sentences.");
+  if(mode==="past"){}
+  if(mode==="now"){
+   if(/\b(am|is|are)\s+\w+ing\b/i.test(text))notes.push("Great! I found a present progressive expression.");
+   else notes.push("Check that you use am / is / are + verb-ing for actions happening now.");
+   if(/\b(there is|there are)\b/i.test(text))notes.push("Nice use of There is / There are.");
+   else notes.push("Try adding There is or There are to introduce something in the picture.");
+  }
+ }
+ box.innerHTML=notes.map(n=>"• "+n).join("<br>");
+ box.classList.add("show");
+}
+document.getElementById("checkFirstWriting").addEventListener("click",()=>{
+ checkWriting(document.getElementById("firstWriting").value,"firstFeedback","first");
+});
+document.getElementById("showModel").addEventListener("click",()=>{
+ const el=document.getElementById("firstModel");
+ el.style.display=el.style.display==="none"?"grid":"none";
+});
+document.getElementById("checkNowWriting").addEventListener("click",()=>{
+ checkWriting(document.getElementById("nowWriting").value,"nowFeedback","now");
+});
+
+function checkConvert(n){
+ const input=document.getElementById("convert"+n).value.trim().toLowerCase().replace(/[.!?]/g,"").replace(/\s+/g," ");
+ const expected=n===1?"a boy is playing soccer in the park":"a girl is reading a book on the bench";
+ const fb=document.getElementById("convertFeedback"+n);
+ if(input===expected)fb.textContent="✓ Correct! You changed the sentence into the present progressive.";
+ else fb.textContent="Not quite. Remember: is + verb-ing. Try again!";
+}
+document.getElementById("showConvertAnswers").addEventListener("click",()=>{
+ const el=document.getElementById("convertAnswers");
+ el.classList.toggle("show");
+});
+</script>
+</body>
+</html>
